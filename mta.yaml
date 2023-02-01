@@ -1,0 +1,74 @@
+# This file is the deployment descriptor and it is the glue that
+# keeps all the micro-services together as a single application throughout its lifecycle.
+
+# N.B: This file is very sensitive to indentation and does not allow for tabs.
+_schema-version: "3.1"
+ID: yt03
+version: 1.0.0
+description: "Sample CAP project with OAuth2 security"
+parameters:
+  enable-parallel-deployments: true
+build-parameters:
+  before-all:
+    - builder: custom
+      commands:
+        - npx -p @sap/cds-dk cds build --production
+
+# service module of node.js
+modules:
+  - name: yt03-srv
+    type: nodejs
+    path: gen/srv
+    parameters:
+      buildpack: nodejs_buildpack
+    build-parameters:
+      builder: npm-ci
+    provides:
+      - name: srv-api # required by consumers of CAP services (e.g. approuter)
+        properties:
+          srv-url: ${default-url}
+    requires:
+      - name: yt03-db
+      - name: yt03-auth
+
+  # database module
+  - name: yt03-db-deployer
+    type: hdb
+    path: db
+    parameters:
+      buildpack: nodejs_buildpack
+    requires:
+      - name: yt03-db # dependency on the HDI container
+
+  - name: yt03
+    type: approuter.nodejs
+    path: app/ # from cds.env.folders. Consider also cds.env.build.target -> gen/app
+    parameters:
+      keep-existing-routes: true
+      disk-quota: 256M
+      memory: 256M
+    requires:
+      - name: srv-api
+        group: destinations
+        properties:
+          name: srv-api # must be used in xs-app.json as well
+          url: ~{srv-url}
+          forwardAuthToken: true
+      - name: yt03-auth
+
+# HDI container
+resources:
+  - name: yt03-db
+    type: com.sap.xs.hdi-container
+    parameters:
+      service: hana
+      service-plan: hdi-shared
+  - name: yt03-auth
+    type: org.cloudfoundry.managed-service
+    parameters:
+      service: xsuaa
+      service-plan: application
+      path: ./xs-security.json
+      config:
+        xsappname: yt03-${org}-${space}
+        tenant-mode: dedicated

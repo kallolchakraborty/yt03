@@ -1,0 +1,52 @@
+{
+  "name": "yt03",
+  "version": "1.0.0",
+  "description": "A simple CAP project.",
+  "repository": "<Add your repository here>",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@sap/hana-client": "^2.15.19",
+    "@sap/xssec": "^3",
+    "passport": "^0"
+  },
+  "devDependencies": {
+    "@sap/ux-specification": "^1.102.15",
+    "sqlite3": "^5.0.4"
+  },
+  "scripts": {
+    "start": "cds run",
+    "watch-yt03": "cds watch --open yt03/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-yt03_ui": "cds watch --open yt03_ui/webapp/index.html?sap-ui-xx-viewCache=false",
+    "watch-webui": "cds watch --open webui/webapp/index.html?sap-ui-xx-viewCache=false"
+  },
+  "cds": {
+    "build": {
+      "tasks": [
+        {
+          "for": "hana",
+          "dest": "../db"
+        },
+        {
+          "for": "node-cf"
+        }
+      ]
+    },
+    "requires": {
+      "db": {
+        "kind": "hana-cloud"
+      },
+      "auth": {
+        "kind": "xsuaa"
+      },
+      "approuter": {
+        "kind": "cloudfoundry"
+      }
+    }
+  },
+  "sapux": [
+    "app/yt03",
+    "app/yt03_ui",
+    "app/webui"
+  ]
+}
