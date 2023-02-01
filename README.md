@@ -52,6 +52,4 @@ Learn more at https://cap.cloud.sap/docs/get-started/.
 8. `cf create-service-key yt03-auth default` to create the service key.
 9. `cds bind -2 yt03-auth:default` to bind it with the security XSUAA service.
 
-### Ref.
 
-1. [Create an SAP Cloud Application Programming Model Project for SAP HANA Cloud](https://developers.sap.com/tutorials/hana-cloud-cap-create-project.html)
